@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title> 💛 | Calendario</title>
+
+   <style>
+/* ======== PALETA VAN GOGH: NOCHE ESTRELLADA ======== */
+:root{
+    --vg-dark: #0a1a3c;
+    --vg-blue: #1b3a6f;
+    --vg-sky: #2e5aa3;
+    --vg-yellow: #fcd66c;
+    --vg-gold: #ffb703;
+}
+body{
+    margin:0;
+    font-family:"Poppins",sans-serif;
+    overflow:hidden;        
+    width:90vw;            
+    height:100vh;           
+    padding:0;
+    overscroll-behavior:none;
+    background-image: url('img/r44d0f4o4xj91.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: scroll;
+}
+
+
+/* ======== FONDO ======== */
+#starry-bg{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+    background:
+        linear-gradient(rgba(10, 26, 60, 0.55), rgba(10, 26, 60, 0.55)),
+        url('img/7f2c36b32d64d4c70e6a80bb7fe3a03d.jpg'),
+        radial-gradient(circle at 50% -20%, #184079 0%, #0a1a3c 70%);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* ======== PARTICULAS ======== */
+.particle{
+    position:absolute;
+    background: var(--vg-yellow);
+    border-radius:50%;
+    box-shadow:0 0 10px var(--vg-gold);
+    animation:spin 8s linear infinite;
+}
+
+@keyframes spin{
+    0%{transform:rotate(0deg) translateX(15px) rotate(0deg);}
+    100%{transform:rotate(360deg) translateX(15px) rotate(-360deg);}
+}
+
+/* ======== CONTENIDO ======== */
+.container{
+    width:100%;
+    max-width:900px;
+    padding:20px;
+    margin:auto;
+    margin-top:40px;
+}
+
+h1{
+    text-align:center;
+    color: var(--vg-yellow);
+    font-size:2rem;
+    margin-bottom:18px;
+    padding: 0 10px;
+    text-shadow:0 0 8px rgba(255,200,0,.4);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+    gap:12px;
+}
+
+/* ======== CAJAS ======== */
+.box{
+    aspect-ratio:1/1;
+    background: var(--vg-blue);
+    color: var(--vg-yellow);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:12px;
+    font-size:1.5rem;
+    cursor:pointer;
+    transition:.25s;
+    font-weight:700;
+    user-select:none;
+    position: relative;
+    overflow:hidden;
+    border:2px solid rgba(255,200,0,.3);
+    box-shadow:0 0 10px rgba(255,215,0,.15);
+}
+
+.box:hover{
+    transform:scale(1.07);
+    box-shadow:0 0 12px rgba(255,230,100,.6);
+}
+
+/* ======== CAJAS BLOQUEADAS ======== */
+.box.locked{
+    filter: grayscale(1) brightness(.5);
+    pointer-events:auto;  /* 👈 SE CAMBIÓ */
+    position:relative;
+    cursor: pointer;       /* 👈 opcional, para que se vea clickeable */
+}
+
+
+.box.locked::after{
+    content:"🔒";
+    font-size:2rem;
+    position:absolute;
+    top:50%;
+    left:55%;
+    transform:translate(-50%, -50%);
+}
+
+/* ======== MODAL ======== */
+.modal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.65);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    opacity:0;
+    pointer-events:none;
+    transition:.3s;
+}
+
+.modal.active{
+    opacity:1;
+    pointer-events:auto;
+}
+
+.modal-content{
+    width:90%;
+    max-width:420px;
+    background: var(--vg-blue);
+    padding:25px;
+    border-radius:14px;
+    text-align:center;
+    animation:fadeIn .35s ease-in-out;
+    color:var(--vg-yellow);
+    border: 2px solid rgba(255,200,0,.4);
+    box-shadow:0 0 15px rgba(255,200,50,.3);
+}
+
+@keyframes fadeIn{
+    from{transform:scale(.8); opacity:.3;}
+    to{transform:scale(1); opacity:1;}
+}
+
+.close{
+    margin-top:18px;
+    background:var(--vg-yellow);
+    padding:10px 16px;
+    border:none;
+    border-radius:10px;
+    color:var(--vg-dark);
+    cursor:pointer;
+    font-size:1rem;
+    font-weight:600;
+    box-shadow:0 0 8px rgba(255,200,0,.4);
+}
+
+.content-text{
+    font-size:1.25rem;
+    line-height:1.6;
+}
+
+/* ======== ANIMACIÓN DE CAJA ======== */
+.box.opening {
+    animation: boxPop .45s ease-out;
+}
+
+@keyframes boxPop {
+    0% { transform: scale(1) rotate(0deg); }
+    40% { transform: scale(1.2) rotate(3deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.box::before {
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:50%;
+    background:rgba(255,255,255,0.12);
+    transform-origin:top;
+    transition:.45s ease-in-out;
+}
+
+.box::after {
+    content:"";
+    position:absolute;
+    bottom:0;
+    left:0;
+    width:100%;
+    height:50%;
+    background:rgba(0,0,0,0.20);
+    transform-origin:bottom;
+    transition:.45s ease-in-out;
+}
+
+.box.opening::before { transform: rotateX(75deg); }
+.box.opening::after  { transform: rotateX(-75deg); }
+
+/* ======== EXPLOSIÓN ======== */
+.particle-burst {
+    position: fixed;
+    pointer-events: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--vg-yellow);
+    box-shadow: 0 0 10px var(--vg-gold);
+    animation: burstAnim 0.8s ease-out forwards;
+}
+
+@keyframes burstAnim {
+    0% { opacity:1; transform: scale(1) translate(0,0); }
+    100% { opacity:0; transform: scale(0.2) translate(var(--tx), var(--ty)); }
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 480px){
+    h1{ font-size:1.4rem; }
+
+    .grid{
+        grid-template-columns:repeat(auto-fill,minmax(70px,1fr));
+        gap:10px;
+    }
+
+    .box{
+        font-size:1.2rem;
+        border-radius:10px;
+    }
+
+    .modal-content{
+        max-width:90%;
+        padding:18px;
+    }
+
+    .content-text{
+        font-size:1.1rem;
+    }
+}
+
+.box.locked {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: scale(1);
+  transition: all 0.3s ease;
+  filter: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.box.locked:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.box.locked::after {
+  content: "🔒";
+  margin-left: 18px;
+  font-size: 1.8rem;
+  position: absolute;
+  opacity: 100;
+  text-shadow: 0 0 6px rgba(255,255,255,0.6);
+}
+
+
+</style>
+
+</head>
+<body>
+
+<!-- Fondo con partículas -->
+<div id="starry-bg"></div>
+
+<div class="container">
+    <h1>Para ti, mi bella estrellita!<br>Calendario de adviento ⭐</h1>
+    <div class="grid" id="grid"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <div id="modalText" class="content-text"></div>
+        <button class="close" onclick="closeModal()">Cerrar</button>
+    </div>
+</div>
+
+<script>
+/******************************************************
+ * 💛 CONTENIDO DE CADA DÍA
+ ******************************************************/
+const adventContent = [
+`<h2>Día 1 — Te amo más de lo que sabes ❤️</h2>
+<p>Primero que nada, este mensaje es para expresarte lo afortunado y feliz que me siento de tenerte en mi vida y de poder compartir tantos momentos contigo.  
+Mirar atrás y ver todo lo que hemos construido juntos me hace sentir que estoy donde quiero estar.  
+Hice este calendario con muchísimo amor para ti, porque cada una de estas sorpresas viene directo de mi corazón, como una forma de recordarte lo importante que eres para mí. 💛</p>`,
+
+`<h2>Día 2 — Algo para endulzar tu vida ✨</h2>
+<p>Habia una golosina particular <b> que te encantaba de niña</b>.  
+¿Y que crees? La encontre, ¿Puedes adivinar cual es? 😏💛</p>`,
+
+`<h2>Día 3 — Un poema para ti ✍️✨</h2>
+<p><i>
+Eres la calma que llega despacio,<br>
+la risa que cruza mi pecho,<br>
+la luz que encuentro en tus ojos<br>
+cuando el mundo se hace estrecho.<br><br>
+
+Eres abrazo, eres brillo, eres cielo,<br>
+eres mi paz al final del día,<br>
+y si el amor tuviera un nombre,<br>
+tú serías su melodía. 💛
+
+<br><br>
+<b>MI MELODIA PERFECTA 🎶</b>
+</i></p>`,
+
+`<h2>Día 4 —  Algo para la pequeña tú ✨</h2>
+<p>En este calendario, no podria faltar la nostalgia, y a pesar de ser algo pequeño, se que sabras por que te lo doy,
+    no tendrás que esperar 3 días esta vez 😌 </p>`,
+
+
+
+`<h2>Día 5 — Un recuerdo 🌙</h2>
+<p>Aquí quiero hablar de un momento contigo que nunca voy a olvidar.<br>
+Cada momento a tu lado ha sido memorable, no hay momento en el que no remembre con suma alegria cada instante que 
+hemos compartido, sin embargo me gustaria recordar y destacar un momento en particular, curioso y peculiar por como 
+se dio y en las circunstancias que atravesabamos en ese preciso momento, pero con una sinceridad proveniente de tu corazón.
+El primer TE AMO, el primero que marco un antes y un despues en nosotros, el que dio pie a darnos cuenta de que ante cualquier 
+situación, estariamos ahi uno para el otro, juntos lado a lado 😘</p>`,
+
+`<h2>Día 6 — Algo un poco distinto 😏🔥</h2>
+<p>No se que tan común pueda ser esto, o de si ya se habia hecho antes, sin embargo creo que esto tambien amerita algo de sazón, 
+    cuando quieras canjearlo tendras que mandarme el codigo que aparece a continuacion: 😳 <br> <b>VNX-0GASM</b></p>`,
+
+`<h2>Día 7 — Una salida sorpresa ✨</h2>
+<p>Preparate por que el siguiente año viene acompañado de un plan muy bonito, este mensaje valida su canjeo 💛</p>`,
+
+`<h2>Día 8 — A pesar de todo... 🌟</h2>
+<p>No hay nada mas que decir, a puesto a que ya sabes que es 😏</p>`,
+
+`<h2>Día 9 — Cupón: Canjeable por un articulo de tu carrito 😘</h2>
+<p>Sabes que siempre me gusta consentirte, y quiero que esta vez puedas quitar algo de tu lista de deseos, tu eliges. <br> (sujeto a economia del novio JAJA)</p>`,
+
+`<h2>Día 10 — Una canción 🎧</h2>
+<p>Mi amor, como bien te dije hace algun tiempo, soy una persona que tiene una conexión con la musica, llena mi vida y me ha abrazado
+    en cada nota, acorde, arreglo y cancion, quiero representar mi amor de esa manera, una manera que solo tú me has hecho 
+    poder hacerla, solamente vas a tener que ser paciente, 23/12/25 💛.</p>`,
+
+`<h2>Día 11 — Foto + texto 💛</h2>
+<p>Elige una foto tuya (o nuestra) y escríbeme algo pequeño.  
+Yo también te voy a escribir algo bonito ese día. 💛📸</p>`,
+
+`<h2>Día 12 — Promesa 🤝</h2>
+<p>Hoy te hago una promesa:  
+<i>(Aquí escribe algo que quieras prometerle: apoyo, cariño, paciencia, salir juntos adelante, etc.)</i></p>`,
+
+`<h2>Día 13 — Canción 🎶</h2>
+<p>Aquí va una canción que me recuerde a ti.  
+Puedes poner link, letra o solo el nombre.  
+O si quieres… puedo escribirte una mini letra original. 😌</p>`,
+
+`<h2>Día 14 — Frase romántica 💫</h2>
+<p><i>“De todas mis decisiones, la más bonita ha sido elegirte a ti.”</i> 💛</p>`,
+
+`<h2>Día 15 — Cita planeada 📅</h2>
+<p>Aquí irá un plan ya preparado.  
+Puede ser cine, cafecito, noche en tu casa, lo que tú quieras.  
+Tú y yo, ese día. 💛</p>`,
+
+`<h2>Día 16 — GIF sexy 😏🔥</h2>
+<p>Aquí puedes agregar un GIF tuyo o mío… o uno picocito que te guste.  
+(Elige bien 😉)</p>`,
+
+`<h2>Día 17 — Cupón de masaje 💆‍♀️💛</h2>
+<p>Este cupón te da derecho a un masaje completo.  
+Espalda, cuello, piernas… lo que pidas.  
+Con cariño. O con intención. 😏</p>`,
+
+`<h2>Día 18 — Foto spicy suave 🔥</h2>
+<p>Aquí va una foto tuya suave, elegante, bonita.  
+Nada hardcore: solo lo suficiente para que me dé calor. 😳🔥</p>`,
+
+`<h2>Día 19 — Meme 😂💛</h2>
+<p>Aquí va un meme que te haga reír.  
+Hazme reír tú también ese día.</p>`,
+
+`<h2>Día 20 — Carta corta 💌</h2>
+<p>Hoy toca escribirme una carta corta.  
+Tres párrafos, honestos, bonitos.  
+Y yo te voy a responder con otra.</p>`,
+
+`<h2>Día 21 — Recuerdo épico ⚡</h2>
+<p>Cuenta un recuerdo gracioso, atrevido o intenso que tengamos.  
+El que te venga primero.  
+No te limites. 😏🔥</p>`,
+
+`<h2>Día 22 — Qué quiero contigo 🌙</h2>
+<p>Hoy te voy a decir lo que quiero contigo a futuro.  
+(Escríbelo aquí: metas, sueños, planes juntos.)</p>`,
+
+`<h2>Día 23 — Video sorpresa 🎥✨</h2>
+<p>Este será un video especial.  
+Tú ya sabes cómo soy cuando me pongo cursi… o cuando me pongo travieso. 😏🔥</p>`,
+
+`<h2>Día 24 — Regalo real 🎁</h2>
+<p>Aquí irá algo que te voy a dar en persona.  
+Un detallito, algo bonito. Algo pensado para ti.</p>`,
+
+`<h2>Día 25 — Algo muy especial 💍🔥</h2>
+<p>Hoy es el día fuerte.  
+Aquí va algo que signifique mucho:  
+<b>una declaración, una promesa grande, un simbolito, lo que tú quieras hacer.</b><br>
+Este día es especial… como tú. 💛🔥</p>`
+];
+
+
+const lockedMessages = [
+    "¿A dónde, mi amor? 😏",
+    "Ah ah ah… todavía no 👀",
+    "Noporolo 🤚✨",
+    "Ese no toca hoy, hermosa 😼",
+    "Tramposa… espera tu día 😌",
+    "¿Ya quieres tu sorpresa? Tsss 😳",
+    "Paciencia, mi vida 💛",
+    "No puedes abrir ese… todavía 😏"
+];
+
+
+/******************************************************
+ * ⭐ LOGICA DE DESBLOQUEO POR DÍA
+ ******************************************************/
+const today = new Date().getDate();
+const openedDays = JSON.parse(localStorage.getItem("openedDays") || "[]");
+
+const grid = document.getElementById("grid");
+
+adventContent.forEach((_, i) => {
+    const day = i + 1;
+    const box = document.createElement("div");
+    box.classList.add("box");
+    box.innerText = day;
+
+    // Bloquear días futuros si aún no han llegado
+    if (day > today) {
+        box.classList.add("locked");
+    }
+
+    // Mantener días ya abiertos desbloqueados aunque cambie la fecha
+    if (openedDays.includes(day)) {
+        box.classList.remove("locked");
+    }
+
+    box.onclick = (e) => openDay(i, e);
+
+    grid.appendChild(box);
+});
+
+/******************************************************
+ * ⭐ ABRIR CAJA
+ ******************************************************/
+const modal = document.getElementById("modal");
+const modalText = document.getElementById("modalText");
+
+function openDay(i, e) {
+    const box = e.currentTarget;
+    const day = i + 1;
+
+    // SI EL DÍA ESTÁ BLOQUEADO → mensaje travieso
+    if (box.classList.contains("locked") && !openedDays.includes(day)) {
+
+        // Mensaje random
+        const msg = lockedMessages[Math.floor(Math.random() * lockedMessages.length)];
+
+        modal.classList.add("active");
+        modalText.innerHTML = `<b>${msg}</b>`;
+        return; // Detén aquí para que no abra el contenido real
+    }
+
+    // --- DÍA NORMAL (desbloqueado) ---
+    
+    // Guardar este día como abierto
+    if (!openedDays.includes(day)) {
+        openedDays.push(day);
+        localStorage.setItem("openedDays", JSON.stringify(openedDays));
+    }
+
+    // Animación apertura
+    box.classList.add("opening");
+
+    const rect = box.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    burst(centerX, centerY);
+
+    setTimeout(() => {
+        modal.classList.add("active");
+        modalText.innerHTML = adventContent[i];
+        box.classList.remove("opening");
+    }, 450);
+}
+
+
+function closeModal(){
+    modal.classList.remove("active");
+}
+
+/******************************************************
+ * ⭐ ESTRELLAS FONDO
+ ******************************************************/
+function createParticles(){
+    const bg = document.getElementById("starry-bg");
+    for(let i=0; i<60; i++){
+        const p = document.createElement("div");
+        p.classList.add("particle");
+
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        const size = Math.random() * 6 + 4;
+        const duration = Math.random() * 6 + 6;
+
+        p.style.left = `${x}px`;
+        p.style.top = `${y}px`;
+        p.style.width = size + "px";
+        p.style.height = size + "px";
+        p.style.animationDuration = duration + "s";
+
+        bg.appendChild(p);
+    }
+}
+createParticles();
+
+/******************************************************
+ * ⭐ EXPLOSIÓN
+ ******************************************************/
+function burst(x, y) {
+    for (let i = 0; i < 25; i++) {
+        const p = document.createElement("div");
+        p.classList.add("particle-burst");
+
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 80 + Math.random() * 60;
+
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+
+        p.style.setProperty("--tx", tx + "px");
+        p.style.setProperty("--ty", ty + "px");
+
+        p.style.left = x + "px";
+        p.style.top = y + "px";
+
+        document.body.appendChild(p);
+
+        setTimeout(() => p.remove(), 800);
+    }
+}
+
+</script>
+
+</body>
+</html>
